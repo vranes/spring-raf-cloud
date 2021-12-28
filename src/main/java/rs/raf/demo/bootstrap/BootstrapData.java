@@ -15,20 +15,14 @@ import java.util.Random;
 @Component
 public class BootstrapData implements CommandLineRunner {
 
-    private final StudentRepository studentRepository;
-    private final CourseRepository courseRepository;
-    private final CourseMaterialRepository courseMaterialRepository;
-    private final TeacherRepository teacherRepository;
+    private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public BootstrapData(StudentRepository studentRepository, CourseRepository courseRepository, CourseMaterialRepository courseMaterialRepository, TeacherRepository teacherRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.studentRepository = studentRepository;
-        this.courseRepository = courseRepository;
-        this.courseMaterialRepository = courseMaterialRepository;
-        this.teacherRepository = teacherRepository;
+    public BootstrapData(PermissionRepository permissionRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.permissionRepository = permissionRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -40,60 +34,26 @@ public class BootstrapData implements CommandLineRunner {
 
         String[] FIRST_NAME_LIST = {"John-James", "Justine", "Ahsan", "Leja", "Jad", "Vernon", "Cara", "Eddison", "Eira", "Emily"};
         String[] LAST_NAME_LIST = {"Booker", "Summers", "Reyes", "Rahman", "Crane", "Cairns", "Hebert", "Bradshaw", "Shannon", "Phillips"};
-        String[] COURSE_LIST = {"Data Science BSc", "Data Science MSci", "Diagnostic Radiography and Imaging (Degree Apprenticeship) BSc (Hons)", "Digital and Technology Solutions degree apprenticeship", "Drama BA", "Drama and Film & Television Studies BA"};
+        String[] PERMISSION_LIST = {"can_create_users", "can_read_users", "can_update_users", "can_delete_users"};
 
         Random random = new Random();
 
-        List<Teacher> teachers = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            Teacher teacher = new Teacher();
-            teacher.setFirstName(FIRST_NAME_LIST[random.nextInt(FIRST_NAME_LIST.length)]);
-            teacher.setLastName(LAST_NAME_LIST[random.nextInt(LAST_NAME_LIST.length)]);
-            teachers.add(teacher);
-        }
-        System.out.println(teacherRepository.saveAll(teachers));
+        List<Permission> permissions = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
 
-        List<Student> students = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+            Permission permission = new Permission(PERMISSION_LIST[i]);
+            permissions.add(permission);
 
-            Student student = new Student();
-            student.setFirstName(FIRST_NAME_LIST[random.nextInt(FIRST_NAME_LIST.length)]);
-            student.setLastName(LAST_NAME_LIST[random.nextInt(LAST_NAME_LIST.length)]);
-
-            Address address = new Address();
-            address.setStreet("Knez Mihajlova");
-            address.setNumber(String.valueOf(i + 1));
-            address.setCity("Belgrade");
-            student.setAddress(address);
-
-            students.add(student);
-            System.out.println(studentRepository.save(student));
-        }
-
-        for (int i = 0; i < COURSE_LIST.length; i++) {
-
-            Course course = new Course();
-            course.setTitle(COURSE_LIST[i]);
-
-//            course.setTeacher(teacherRepository.findById((long) (random.nextInt(teachers.size()) + 1)).get());
-            course.setTeacher(teachers.get(random.nextInt(teachers.size())));
-            for (int j = 0; j < 5; j++) {
-                course.getStudents().add(studentRepository.findById((long) random.nextInt(students.size()) + 1).get());
-            }
-
-            CourseMaterial courseMaterial = new CourseMaterial();
-            courseMaterial.setUrl("localhost:8080/courses/" + COURSE_LIST[i].replaceAll(" ", "-"));
-            courseMaterial.setCourse(course);
-
-            course.setMaterial(courseMaterial);
-            courseRepository.save(course);
+            System.out.println(permissionRepository.save(permission));
         }
 
         User user1 = new User();
-        user1.setUsername("user1");
+        user1.setEmail("user1@gmail.com");
+        user1.setName("name1");
+        user1.setSurname("surname1");
         user1.setPassword(this.passwordEncoder.encode("user1"));
-        this.userRepository.save(user1);
-
+        user1.getPermissions().addAll(permissions);
+        System.out.println(userRepository.save(user1));
 
 
         System.out.println("Data loaded!");
