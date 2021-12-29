@@ -36,4 +36,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "PERMISSION_ID", referencedColumnName = "ID")
     )
     private List<Permission> permissions = new ArrayList<>();
+
+    public void addPermission(Permission permission) {
+        permissions.add(permission);
+        permission.getUsers().add(this);
+    }
 }

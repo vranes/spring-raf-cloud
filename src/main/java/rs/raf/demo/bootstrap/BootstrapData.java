@@ -34,9 +34,7 @@ public class BootstrapData implements CommandLineRunner {
 
         String[] FIRST_NAME_LIST = {"John-James", "Justine", "Ahsan", "Leja", "Jad", "Vernon", "Cara", "Eddison", "Eira", "Emily"};
         String[] LAST_NAME_LIST = {"Booker", "Summers", "Reyes", "Rahman", "Crane", "Cairns", "Hebert", "Bradshaw", "Shannon", "Phillips"};
-        String[] PERMISSION_LIST = {"can_create_users", "can_read_users", "can_update_users", "can_delete_users"};
-
-        Random random = new Random();
+        Permissions[] PERMISSION_LIST = {Permissions.can_create_users, Permissions.can_read_users, Permissions.can_update_users, Permissions.can_delete_users};
 
         List<Permission> permissions = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
@@ -52,7 +50,9 @@ public class BootstrapData implements CommandLineRunner {
         user1.setName("name1");
         user1.setSurname("surname1");
         user1.setPassword(this.passwordEncoder.encode("user1"));
-        user1.getPermissions().addAll(permissions);
+        for(Permission p: permissions){
+            user1.addPermission(p);
+        }
         System.out.println(userRepository.save(user1));
 
 

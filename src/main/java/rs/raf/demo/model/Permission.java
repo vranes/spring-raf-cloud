@@ -13,14 +13,14 @@ import java.util.List;
 @Setter
 public class Permission {
 
-    public Permission (String id){
+    public Permission (Permissions id){
         this.ID = id;
     }
 
     public Permission (){}
 
     @Id
-    private String ID;
+    private Permissions ID;
 
     @ManyToMany
     @JoinTable(
@@ -30,4 +30,9 @@ public class Permission {
     )
     @JsonIgnore
     private List<User> users = new ArrayList<>();
+
+    public void removeUser(User user) {
+        users.remove(user);
+        user.getPermissions().remove(this);
+    }
 }

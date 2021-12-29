@@ -1,16 +1,19 @@
 package rs.raf.demo.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import rs.raf.demo.model.Permission;
 import rs.raf.demo.model.User;
 import rs.raf.demo.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService, IService<User, Long> {
@@ -26,10 +29,13 @@ public class UserService implements UserDetailsService, IService<User, Long> {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User myUser = this.userRepository.findByEmail(email);
         if(myUser == null) {
-            throw new UsernameNotFoundException("User name "+email+" not found");
+            throw new UsernameNotFoundException("Email "+email+" not found");
         }
-
-        return new org.springframework.security.core.userdetails.User(myUser.getEmail(), myUser.getPassword(), new ArrayList<>());
+        List <GrantedAuthority> roles = new ArrayList<>();
+        for (Permission p: myUser.getPermissions()){
+            roles.add(p.getID());
+        }
+        return new org.springframework.security.core.userdetails.User(myUser.getEmail(), myUser.getPassword(), roles);
     }
 
     @Override
@@ -43,8 +49,8 @@ public class UserService implements UserDetailsService, IService<User, Long> {
     }
 
     @Override
-    public List findAll() {
-        return (List<User>) userRepository.findAll();
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 
     @Override
