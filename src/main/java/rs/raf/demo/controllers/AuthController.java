@@ -6,12 +6,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import rs.raf.demo.model.Permissions;
 import rs.raf.demo.requests.LoginRequest;
 import rs.raf.demo.responses.LoginResponse;
 import rs.raf.demo.services.UserService;
 import rs.raf.demo.utils.JwtUtil;
-//import rs.edu.raf.spring_project.model.AuthReq;
-//import rs.edu.raf.spring_project.model.AuthRes;
+
+import java.util.Arrays;
 
 @RestController
 @CrossOrigin
@@ -33,11 +34,13 @@ public class AuthController {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         } catch (Exception   e){
-            e.printStackTrace();
+            //e.printStackTrace();
             return ResponseEntity.status(401).build();
         }
+        UserDetails user = userService.loadUserByUsername(loginRequest.getEmail());
+        String perm = Arrays.toString(user.getAuthorities().toArray());
 
-        return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(loginRequest.getEmail())));
+        return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(loginRequest.getEmail()),  perm));
     }
 
 }

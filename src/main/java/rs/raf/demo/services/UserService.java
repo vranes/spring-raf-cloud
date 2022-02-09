@@ -58,4 +58,8 @@ public class UserService implements UserDetailsService, IService<User, Long> {
         userRepository.deleteById(id);
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }

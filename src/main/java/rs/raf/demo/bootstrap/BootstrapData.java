@@ -32,8 +32,6 @@ public class BootstrapData implements CommandLineRunner {
 
         System.out.println("Loading Data...");
 
-        String[] FIRST_NAME_LIST = {"John-James", "Justine", "Ahsan", "Leja", "Jad", "Vernon", "Cara", "Eddison", "Eira", "Emily"};
-        String[] LAST_NAME_LIST = {"Booker", "Summers", "Reyes", "Rahman", "Crane", "Cairns", "Hebert", "Bradshaw", "Shannon", "Phillips"};
         Permissions[] PERMISSION_LIST = {Permissions.can_create_users, Permissions.can_read_users, Permissions.can_update_users, Permissions.can_delete_users};
 
         List<Permission> permissions = new ArrayList<>();
@@ -54,6 +52,13 @@ public class BootstrapData implements CommandLineRunner {
             user1.addPermission(p);
         }
         System.out.println(userRepository.save(user1));
+
+        User user2 = new User();
+        user2.setEmail("user2@gmail.com");
+        user2.setName("name2");
+        user2.setSurname("surname2");
+        user2.setPassword(this.passwordEncoder.encode("user2"));
+        userRepository.save(user2);
 
 
         System.out.println("Data loaded!");
