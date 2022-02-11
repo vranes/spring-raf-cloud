@@ -1,6 +1,6 @@
-package com.example.demo.model;
+package rs.raf.demo.model;
 
-public enum MachineOperation {
+public enum Operation {
     START,
     STOP,
     RESTART

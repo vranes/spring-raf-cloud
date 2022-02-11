@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 
 @Entity
@@ -15,15 +16,21 @@ public class Node {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @ManyToOne
-    private User createdBy;
+    private User user;
 
     @Column
     private Boolean active;
 
     @Column
     private String name;
+
+    @Version
+    private int version;
+
+    @Column     // TODO
+    private Date createdAt;
 }

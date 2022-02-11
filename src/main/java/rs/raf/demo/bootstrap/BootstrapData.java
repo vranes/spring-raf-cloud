@@ -51,7 +51,6 @@ public class BootstrapData implements CommandLineRunner {
         for(Permission p: permissions){
             user1.addPermission(p);
         }
-        System.out.println(userRepository.save(user1));
 
         User user2 = new User();
         user2.setEmail("user2@gmail.com");
