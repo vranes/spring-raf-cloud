@@ -31,6 +31,6 @@ public class Node {
     @Version
     private int version;
 
-    @Column     // TODO
+    @Column(name = "created_at")     // TODO
     private Date createdAt;
 }

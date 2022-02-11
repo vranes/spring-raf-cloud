@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import rs.raf.demo.model.Node;
-import rs.raf.demo.model.Operation;
-import rs.raf.demo.model.Status;
-import rs.raf.demo.model.User;
+import rs.raf.demo.model.*;
 import rs.raf.demo.repositories.NodeRepository;
 
 import javax.transaction.Transactional;
@@ -21,10 +18,12 @@ public class NodeService implements IService<Node, Long>{
 
     private NodeRepository nodeRepository;
     private final TaskScheduler taskScheduler;
+    private ErrorMessageService errorMessageService;
     private Random rand = new Random();
 
     @Autowired
-    public NodeService(NodeRepository nodeRepository, TaskScheduler taskScheduler) {
+    public NodeService(NodeRepository nodeRepository, TaskScheduler taskScheduler, ErrorMessageService errorMessageService) {
+        this.errorMessageService = errorMessageService;
         this.nodeRepository = nodeRepository;
         this.taskScheduler = taskScheduler;
     }
@@ -169,7 +168,10 @@ public class NodeService implements IService<Node, Long>{
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                //createErrorMessage(operation, node);
+//                Optional<Node> o = findById(id);        // TODO
+//                Node n = o.get();
+//                if(n != null)
+                    errorMessageService.saveErrorMessage(operation, id, user);
             }
         }, scheduleAt);
     }
