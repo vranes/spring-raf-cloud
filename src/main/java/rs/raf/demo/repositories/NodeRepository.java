@@ -17,12 +17,15 @@ import java.util.Optional;
 
 @Repository
 public interface NodeRepository extends JpaRepository<Node, Long> {
-    public List<Node> findAllByUserId (Long userId);
+
+    @Query("select n from Node n where" +
+            " (n.user.id = :userId) and n.active = true")
+    List<Node> findAllByUserId (@Param("userId") Long userId);
 
     @Lock(value = LockModeType.PESSIMISTIC_WRITE)
-    public Optional<Node> findByIdAndUserId (Long id, Long userId);
+    Optional<Node> findByIdAndUserId (Long id, Long userId);
 
-    public Node findByNameAndUserId (String name, Long userId);
+    Node findByNameAndUserId (String name, Long userId);
 
 
     @Query("select n from Node n where" +

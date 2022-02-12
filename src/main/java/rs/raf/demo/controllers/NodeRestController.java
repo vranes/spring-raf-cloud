@@ -86,8 +86,8 @@ public class NodeRestController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<Node> nodes = nodeService.findAll();
-        
+        List<Node> nodes = nodeService.findAllByUser(user);
+
         return new ResponseEntity<>(nodes, HttpStatus.OK);
     };
 

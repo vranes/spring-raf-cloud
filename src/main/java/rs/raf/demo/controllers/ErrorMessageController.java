@@ -48,7 +48,7 @@ public class ErrorMessageController {
         }
 
         List<ErrorMessage> errors = errorMessageService.findAllByUser(user);
-
+        System.out.println(errors);
         return new ResponseEntity<>(errors, HttpStatus.OK);
     };
 

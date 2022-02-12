@@ -48,6 +48,11 @@ public class NodeService implements IService<Node, Long>{
         nodeRepository.deleteById(id);
     }
 
+    public List<Node> findAllByUser(User user) {
+        return nodeRepository.findAllByUserId(user.getId());
+    }
+
+    @Transactional
     public Optional<Node> findByIdAndUser (Long id, User user){
         return nodeRepository.findByIdAndUserId(id, user.getId());
     }
