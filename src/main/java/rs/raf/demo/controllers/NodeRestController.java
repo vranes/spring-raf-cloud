@@ -19,27 +19,25 @@ import java.util.*;
 public class NodeRestController {
 
     private final NodeService nodeService;
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
-    public NodeRestController(NodeService nodeService, PasswordEncoder passwordEncoder, UserService userService) {
+    public NodeRestController(NodeService nodeService, UserService userService) {
         this.nodeService = nodeService;
-        this.passwordEncoder = passwordEncoder;
         this.userService = userService;
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> searchNodes(@RequestParam("name") String name, @RequestParam("status") List<String> status, @RequestParam("dateFrom") Date dateFrom, @RequestParam("dateTo") Date dateTo){
+    public ResponseEntity<?> searchNodes(@RequestParam("name") String name, @RequestParam("status") List<String> status, @RequestParam("dateFrom") String dateFromStr, @RequestParam("dateTo") String dateToStr){
         if (!authCheck()) {
             return ResponseEntity.status(403).build();
         }
 
-        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_search_machines)) {
+        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_search_nodes)) {
             return ResponseEntity.status(403).build();
         }
 
-        UserDetails userDetails = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getDetails();
-        User user = userService.findByEmail(userDetails.getUsername());
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.findByEmail(username);
         if(user == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -62,40 +60,59 @@ public class NodeRestController {
         if (name.equals(""))
             name = null;
 
+        Date dateFrom = null;
+        Date dateTo = null;
         List<Node> nodes = nodeService.search(user, name, statusList, dateFrom, dateTo);
-        List<Node> activeNodes = new ArrayList<>();
 
-//        if (nodes != null) {
-//            for (Node n : nodes) {
-//                if (n.getActive())
-//                    activeNodes.add(n);
-//            }
-//        }
+        System.out.println(nodes);
+        System.out.println(name);
+        System.out.println(statusList);
+        return new ResponseEntity<>(nodes, HttpStatus.OK);
+    };
 
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> all(){
+        if (!authCheck()) {
+            return ResponseEntity.status(403).build();
+        }
+
+        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_search_nodes)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.findByEmail(username);
+        if(user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Node> nodes = nodeService.findAll();
+        
         return new ResponseEntity<>(nodes, HttpStatus.OK);
     };
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createNode(@RequestParam("name") String name){
+    public ResponseEntity<?> createNode(@RequestBody NodeNameRequest request){
+        System.out.println(request.getName());
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
         }
-        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_create_machines)) {
+        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_create_nodes)) {
             return ResponseEntity.status(403).build();
         }
 
-        UserDetails userDetails = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getDetails();
-        User user = userService.findByEmail(userDetails.getUsername());
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.findByEmail(username);
 
         if(user == null)
             return ResponseEntity.badRequest().build();
 
-        if (nodeService.findByNameAndUser(name, user) != null)
+        if (nodeService.findByNameAndUser(request.getName(), user) != null)
             return ResponseEntity.badRequest().build();
 
         Node node = new Node();
-        node.setName(name);
+        node.setName(request.getName());
         node.setActive(true);
         node.setUser(user);
         node.setStatus(Status.STOPPED);
@@ -112,12 +129,12 @@ public class NodeRestController {
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
         }
-        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_delete_users)) {
+        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_destroy_nodes)) {
             return ResponseEntity.status(403).build();
         }
 
-        UserDetails userDetails = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getDetails();
-        User user = userService.findByEmail(userDetails.getUsername());
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userService.findByEmail(username);
 
         Optional<Node> optionalNode = nodeService.findByIdAndUser(id, user);
 
@@ -139,7 +156,7 @@ public class NodeRestController {
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
         }
-        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_start_machines)) {
+        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_start_nodes)) {
             return ResponseEntity.status(403).build();
         }
 
@@ -169,7 +186,7 @@ public class NodeRestController {
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
         }
-        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_stop_machines)) {
+        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_stop_nodes)) {
             return ResponseEntity.status(403).build();
         }
 
@@ -199,7 +216,7 @@ public class NodeRestController {
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
         }
-        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_restart_machines)) {
+        if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_restart_nodes)) {
             return ResponseEntity.status(403).build();
         }
 
@@ -232,17 +249,17 @@ public class NodeRestController {
 
         Operation operation = null;
         if (operationStr.equals("STOP")) {
-            if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_stop_machines))
+            if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_stop_nodes))
                 return ResponseEntity.status(403).build();
             operation = Operation.STOP;
         }
         else if (operationStr.equals("START")) {
-            if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_start_machines))
+            if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_start_nodes))
                 return ResponseEntity.status(403).build();
             operation = Operation.START;
         }
         else if (operationStr.equals("RESTART")) {
-            if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_restart_machines))
+            if (!SecurityContextHolder.getContext().getAuthentication().getAuthorities().contains(Permissions.can_restart_nodes))
                 return ResponseEntity.status(403).build();
             operation = Operation.RESTART;
         }

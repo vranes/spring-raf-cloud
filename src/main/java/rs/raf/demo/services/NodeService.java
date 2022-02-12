@@ -79,6 +79,7 @@ public class NodeService implements IService<Node, Long>{
 //        }
 //
 //        return nodes;
+
         return nodeRepository.searchNodes(name, dateFrom, dateTo, status, user.getId());
     }
 

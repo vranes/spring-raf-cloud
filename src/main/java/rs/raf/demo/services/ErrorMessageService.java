@@ -10,6 +10,7 @@ import rs.raf.demo.repositories.ErrorMessageRepository;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ErrorMessageService {
@@ -21,7 +22,7 @@ public class ErrorMessageService {
         this.errorMessageRepository = errorMessageRepository;
     }
 
-    public ErrorMessage saveErrorMessage(Operation operation, Long nodeId, User user) {
+    public void saveErrorMessage(Operation operation, Long nodeId, User user) {
         ErrorMessage errorMessage = new ErrorMessage();
         errorMessage.setNodeId(nodeId);
         errorMessage.setUser(user);
@@ -30,17 +31,21 @@ public class ErrorMessageService {
             case START:
                 errorMessage.setStatus(Operation.START);
                 errorMessage.setMessage("Failed to start node");
-                return errorMessage;
+                errorMessageRepository.save(errorMessage);
             case STOP:
                 errorMessage.setStatus(Operation.STOP);
                 errorMessage.setMessage("Failed to stop machine");
-                return errorMessage;
+                errorMessageRepository.save(errorMessage);
             case RESTART:
                 errorMessage.setStatus(Operation.RESTART);
                 errorMessage.setMessage("Failed to restart machine");
-                return errorMessage;
+                errorMessageRepository.save(errorMessage);
             default:
-                return null;
+
         }
+    }
+
+    public List<ErrorMessage> findAllByUser(User user){
+        return errorMessageRepository.findAllByUserId(user.getId());
     }
 }

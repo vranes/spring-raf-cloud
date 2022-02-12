@@ -39,8 +39,8 @@ public class User {
     )
     private List<Permission> permissions = new ArrayList<>();
 
-    @OneToMany
-    private List<Node> nodes = new ArrayList<>();
+//    @OneToMany
+//    private List<Node> nodes = new ArrayList<>();
 
     public void addPermission(Permission permission) {
         permissions.add(permission);

@@ -28,8 +28,8 @@ public class Node {
     @Column
     private String name;
 
-    @Version
-    private int version;
+//    @Version
+//    private int version;
 
     @Column(name = "created_at")     // TODO
     private Date createdAt;
