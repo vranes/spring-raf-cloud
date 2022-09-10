@@ -32,14 +32,17 @@ public class ErrorMessageService {
                 errorMessage.setStatus(Operation.START);
                 errorMessage.setMessage("Failed to start node");
                 errorMessageRepository.save(errorMessage);
+                break;
             case STOP:
                 errorMessage.setStatus(Operation.STOP);
                 errorMessage.setMessage("Failed to stop machine");
                 errorMessageRepository.save(errorMessage);
+                break;
             case RESTART:
                 errorMessage.setStatus(Operation.RESTART);
                 errorMessage.setMessage("Failed to restart machine");
                 errorMessageRepository.save(errorMessage);
+                break;
             default:
 
         }

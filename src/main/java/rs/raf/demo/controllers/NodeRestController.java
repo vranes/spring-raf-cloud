@@ -1,11 +1,10 @@
 package rs.raf.demo.controllers;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import rs.raf.demo.model.*;
 import rs.raf.demo.services.NodeService;
@@ -27,7 +26,7 @@ public class NodeRestController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> searchNodes(@RequestParam("name") String name, @RequestParam("status") List<String> status, @RequestParam("dateFrom") String dateFromStr, @RequestParam("dateTo") String dateToStr){
+    public ResponseEntity<?> searchNodes(@RequestParam("name") String name, @RequestParam("status") List<String> status, @RequestParam("dateFrom") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<Date> dateFrom, @RequestParam("dateTo") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<Date> dateTo){
         if (!authCheck()) {
             return ResponseEntity.status(403).build();
         }
@@ -60,9 +59,18 @@ public class NodeRestController {
         if (name.equals(""))
             name = null;
 
-        Date dateFrom = null;
-        Date dateTo = null;
-        List<Node> nodes = nodeService.search(user, name, statusList, dateFrom, dateTo);
+        Date dateFromVal = null;
+        Date dateToVal = null;
+
+        if (dateFrom.isPresent()) {
+            dateFromVal = dateFrom.get();
+        }
+
+        if (dateTo.isPresent()) {
+            dateToVal = dateTo.get();
+        }
+
+        List<Node> nodes = nodeService.search(user, name, statusList, dateFromVal, dateToVal);
 
         System.out.println(nodes);
         System.out.println(name);
@@ -94,7 +102,7 @@ public class NodeRestController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createNode(@RequestBody NodeNameRequest request){
-        System.out.println(request.getName());
+
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
         }
@@ -150,8 +158,7 @@ public class NodeRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/start", consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/start", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> startNode(@RequestParam("id") Long id){
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
@@ -172,7 +179,8 @@ public class NodeRestController {
             return ResponseEntity.notFound().build();
 
         Node node = optionalNode.get();
-        if (!(node.getStatus() != Status.STOPPED))
+
+        if (node.getStatus() != Status.STOPPED)
             return ResponseEntity.badRequest().build();
 
         nodeService.startNode(id, user);
@@ -180,8 +188,7 @@ public class NodeRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/stop", consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stop", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> stopNode(@RequestParam("id") Long id){
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
@@ -202,7 +209,7 @@ public class NodeRestController {
             return ResponseEntity.notFound().build();
 
         Node node = optionalNode.get();
-        if (!(node.getStatus() != Status.RUNNING))
+        if (node.getStatus() != Status.RUNNING)
             return ResponseEntity.badRequest().build();
 
         nodeService.stopNode(id, user);
@@ -210,8 +217,7 @@ public class NodeRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/restart", consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/restart", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> restartNode(@RequestParam("id") Long id){
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
@@ -232,7 +238,7 @@ public class NodeRestController {
             return ResponseEntity.notFound().build();
 
         Node node = optionalNode.get();
-        if (!(node.getStatus() != Status.RUNNING))
+        if (node.getStatus() != Status.RUNNING)
             return ResponseEntity.badRequest().build();
 
         nodeService.restartNode(id, user);
@@ -242,7 +248,7 @@ public class NodeRestController {
 
 
     @PostMapping(value = "/schedule", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> scheduleOperation(@RequestParam("id") Long id, @RequestParam("scheduleAt") Date scheduleAt, String operationStr) {
+    public ResponseEntity<?> scheduleOperation(@RequestParam("id") Long id, @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date scheduleAt, @RequestParam("operation") String operationStr) {
         if (!authCheck()) {
             return ResponseEntity.internalServerError().body(null);
         }

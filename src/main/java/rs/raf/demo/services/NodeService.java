@@ -116,7 +116,8 @@ public class NodeService implements IService<Node, Long>{
         save(node);
     }
 
-    private Node lockRowAndSleep(Long id, User user) {
+    @Transactional
+    protected Node lockRowAndSleep(Long id, User user) {
         Optional<Node> o = findByIdAndUser(id, user);     // find for update
         Node node = o.get();
         try {
@@ -157,14 +158,15 @@ public class NodeService implements IService<Node, Long>{
 
     @Async
     public void schedule(Long id, Date scheduleAt, Operation operation, User user) {
+        System.out.println("schedule at: " + scheduleAt);
         this.taskScheduler.schedule(() -> {
             try {
                 switch (operation) {
-                    case STOP:
-                        this.stopNode(id, user);
-                        break;
                     case START:
                         this.startNode(id, user);
+                        break;
+                    case STOP:
+                        this.stopNode(id, user);
                         break;
                     case RESTART:
                         this.restartNode(id, user);
@@ -174,11 +176,9 @@ public class NodeService implements IService<Node, Long>{
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-//                Optional<Node> o = findById(id);        // TODO
-//                Node n = o.get();
-//                if(n != null)
-                    errorMessageService.saveErrorMessage(operation, id, user);
+                errorMessageService.saveErrorMessage(operation, id, user);
             }
         }, scheduleAt);
+        System.out.println("scheduled at: " + scheduleAt);
     }
 }

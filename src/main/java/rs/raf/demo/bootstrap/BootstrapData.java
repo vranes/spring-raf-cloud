@@ -63,5 +63,7 @@ public class BootstrapData implements CommandLineRunner {
 
 
         System.out.println("Data loaded!");
+        System.out.println("2000-10-31T01:30:00.000-05:00");
+        System.out.println("2000-2-14T01:30:00.000-05:00");
     }
 }
